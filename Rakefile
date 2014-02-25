@@ -1,23 +1,19 @@
 require 'yaml'
 require 'logger'
 require 'active_record'
- 
+require 'sqlite3'
+
 namespace :db do
-  def create_database config
-    options = {:charset => 'utf8', :collation => 'utf8_unicode_ci'}
- 
+  def create_database config 
     create_db = lambda do |config|
-      ActiveRecord::Base.establish_connection config.merge('database' => nil)
-      ActiveRecord::Base.connection.create_database config['database'], options
       ActiveRecord::Base.establish_connection config
     end
  
     begin
       create_db.call config
-    rescue Sqlite3::Error => sqlerr
-        $stderr.puts "Couldn't create database for #{config.inspect}, charset: utf8, collation: utf8_unicode_ci"
-        $stderr.puts "(if you set the charset manually, make sure you have a matching collation)" if config['charset']
-      end
+    rescue SQLite3::Exception => sqlerr
+      $stderr.puts "Couldn't create database for #{config.inspect}, charset: utf8, collation: utf8_unicode_ci"
+      $stderr.puts "(if you set the charset manually, make sure you have a matching collation)" if config['charset']
     end
   end
  
